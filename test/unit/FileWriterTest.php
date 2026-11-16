@@ -66,7 +66,7 @@ final class FileWriterTest extends TestCase
     }
 
     #[Test]
-    public function testADirectoryModeThatCannotBeAppliedIsReported(): void
+    public function aDirectoryModeThatCannotBeAppliedIsReported(): void
     {
         if ('Windows' === PHP_OS_FAMILY) {
             static::markTestSkipped('Windows does not model POSIX directory modes');
@@ -84,7 +84,7 @@ final class FileWriterTest extends TestCase
     }
 
     #[Test]
-    public function testAnExistingDestinationKeepsItsMode(): void
+    public function anExistingDestinationKeepsItsMode(): void
     {
         if ('Windows' === PHP_OS_FAMILY) {
             static::markTestSkipped('Windows does not model POSIX file modes');
@@ -107,7 +107,7 @@ final class FileWriterTest extends TestCase
     }
 
     #[Test]
-    public function testAnExplicitModeIsAppliedToANewFile(): void
+    public function anExplicitModeIsAppliedToANewFile(): void
     {
         if ('Windows' === PHP_OS_FAMILY) {
             static::markTestSkipped('Windows does not model POSIX file modes');
@@ -126,7 +126,7 @@ final class FileWriterTest extends TestCase
     }
 
     #[Test]
-    public function testAnExplicitModeIsNotNarrowedByTheProcessUmask(): void
+    public function anExplicitModeIsNotNarrowedByTheProcessUmask(): void
     {
         if ('Windows' === PHP_OS_FAMILY) {
             static::markTestSkipped('Windows does not model POSIX file modes');
@@ -152,7 +152,7 @@ final class FileWriterTest extends TestCase
     }
 
     #[Test]
-    public function testAnExplicitModeOverridesTheDestinationMode(): void
+    public function anExplicitModeOverridesTheDestinationMode(): void
     {
         if ('Windows' === PHP_OS_FAMILY) {
             static::markTestSkipped('Windows does not model POSIX file modes');
@@ -182,7 +182,7 @@ final class FileWriterTest extends TestCase
     }
 
     #[Test]
-    public function testAttributesAreNotAdoptedWherePosixPermissionsAreUnavailable(): void
+    public function attributesAreNotAdoptedWherePosixPermissionsAreUnavailable(): void
     {
         $inherit     = new ReflectionMethod(FileWriter::class, 'adoptAttributes');
         $destination = $this->path('target.txt');
@@ -212,7 +212,7 @@ final class FileWriterTest extends TestCase
     }
 
     #[Test]
-    public function testFailureToRemoveTheTemporaryFileIsSwallowed(): void
+    public function failureToRemoveTheTemporaryFileIsSwallowed(): void
     {
         $discard = new ReflectionMethod(FileWriter::class, 'discard');
         $missing = $this->path('missing.txt');
@@ -227,7 +227,7 @@ final class FileWriterTest extends TestCase
     }
 
     #[Test]
-    public function testLeavesNoTemporaryFileBehind(): void
+    public function leavesNoTemporaryFileBehind(): void
     {
         $file = $this->path('target.txt');
 
@@ -237,7 +237,7 @@ final class FileWriterTest extends TestCase
     }
 
     #[Test]
-    public function testLeavesNoTemporaryFileBehindWhenTheWriteFails(): void
+    public function leavesNoTemporaryFileBehindWhenTheWriteFails(): void
     {
         $directory = $this->path('nested');
         mkdir($directory);
@@ -255,7 +255,7 @@ final class FileWriterTest extends TestCase
     }
 
     #[Test]
-    public function testOwnershipThatCannotBeRestoredIsNotFatal(): void
+    public function ownershipThatCannotBeRestoredIsNotFatal(): void
     {
         $adoptOwnership = new ReflectionMethod(FileWriter::class, 'adoptOwnership');
         $destination    = $this->path('target.txt');
@@ -272,7 +272,7 @@ final class FileWriterTest extends TestCase
     }
 
     #[Test]
-    public function testPosixInheritanceGivesANewDestinationTheDefaultMode(): void
+    public function posixInheritanceGivesANewDestinationTheDefaultMode(): void
     {
         $temporary = $this->path('.wcmprobe');
         file_put_contents(
@@ -296,7 +296,7 @@ final class FileWriterTest extends TestCase
     }
 
     #[Test]
-    public function testPosixInheritanceGivesTheTemporaryFileTheExistingMode(): void
+    public function posixInheritanceGivesTheTemporaryFileTheExistingMode(): void
     {
         $destination = $this->path('target.txt');
         file_put_contents(
@@ -326,7 +326,7 @@ final class FileWriterTest extends TestCase
     }
 
     #[Test]
-    public function testRejectsAnEmptyFilename(): void
+    public function rejectsAnEmptyFilename(): void
     {
         $this->expectException(Exception\InvalidArgumentException::class);
         $this->expectExceptionMessage('No file name specified');
@@ -335,7 +335,7 @@ final class FileWriterTest extends TestCase
     }
 
     #[Test]
-    public function testReplacesTheFileInsteadOfModifyingItInPlace(): void
+    public function replacesTheFileInsteadOfModifyingItInPlace(): void
     {
         $file = $this->path('target.txt');
         $link = $this->path('sibling.txt');
@@ -362,7 +362,7 @@ final class FileWriterTest extends TestCase
     }
 
     #[Test]
-    public function testResolveFollowsASymbolicLink(): void
+    public function resolveFollowsASymbolicLink(): void
     {
         $target = $this->path('target.txt');
         file_put_contents(
@@ -380,7 +380,7 @@ final class FileWriterTest extends TestCase
     }
 
     #[Test]
-    public function testResolveLeavesANonLinkUnchanged(): void
+    public function resolveLeavesANonLinkUnchanged(): void
     {
         $file = $this->path('target.txt');
 
@@ -388,7 +388,7 @@ final class FileWriterTest extends TestCase
     }
 
     #[Test]
-    public function testResolveRejectsADanglingSymbolicLink(): void
+    public function resolveRejectsADanglingSymbolicLink(): void
     {
         $link = $this->path('link.txt');
         $this->symlink(
@@ -403,7 +403,7 @@ final class FileWriterTest extends TestCase
     }
 
     #[Test]
-    public function testResolveRejectsAnEmptyName(): void
+    public function resolveRejectsAnEmptyName(): void
     {
         $this->expectException(Exception\InvalidArgumentException::class);
         $this->expectExceptionMessage('No file name specified');
@@ -412,7 +412,7 @@ final class FileWriterTest extends TestCase
     }
 
     #[Test]
-    public function testShorterContentLeavesNoTrailingBytes(): void
+    public function shorterContentLeavesNoTrailingBytes(): void
     {
         $file = $this->path('target.txt');
 
@@ -424,7 +424,7 @@ final class FileWriterTest extends TestCase
     }
 
     #[Test]
-    public function testThrowsWhenNoTemporaryFileCanBeCreated(): void
+    public function throwsWhenNoTemporaryFileCanBeCreated(): void
     {
         // The parent of the target is a regular file, so no temporary file can be
         // created beside the target.
@@ -441,7 +441,7 @@ final class FileWriterTest extends TestCase
     }
 
     #[Test]
-    public function testThrowsWhenTheTargetDirectoryDoesNotExist(): void
+    public function throwsWhenTheTargetDirectoryDoesNotExist(): void
     {
         $this->expectException(Exception\RuntimeException::class);
 
@@ -449,7 +449,7 @@ final class FileWriterTest extends TestCase
     }
 
     #[Test]
-    public function testThrowsWhenTheTargetIsADirectory(): void
+    public function throwsWhenTheTargetIsADirectory(): void
     {
         $this->expectException(Exception\RuntimeException::class);
 
@@ -457,7 +457,7 @@ final class FileWriterTest extends TestCase
     }
 
     #[Test]
-    public function testWriteFollowsASymbolicLinkAndKeepsTheLink(): void
+    public function writeFollowsASymbolicLinkAndKeepsTheLink(): void
     {
         $target = $this->path('target.txt');
         file_put_contents(
@@ -479,7 +479,7 @@ final class FileWriterTest extends TestCase
     }
 
     #[Test]
-    public function testWritesContent(): void
+    public function writesContent(): void
     {
         $file = $this->path('target.txt');
 
@@ -489,7 +489,7 @@ final class FileWriterTest extends TestCase
     }
 
     #[Test]
-    public function testWriteTreeCreatesAWholeTreeInOnePass(): void
+    public function writeTreeCreatesAWholeTreeInOnePass(): void
     {
         $pages = [
             'index.html',
@@ -509,7 +509,7 @@ final class FileWriterTest extends TestCase
     }
 
     #[Test]
-    public function testWriteTreeCreatesTheDirectoriesLeadingToTheFile(): void
+    public function writeTreeCreatesTheDirectoriesLeadingToTheFile(): void
     {
         $file = "{$this->directory}/guide/intro/index.html";
 
@@ -519,7 +519,7 @@ final class FileWriterTest extends TestCase
     }
 
     #[Test]
-    public function testWriteTreeKeepsTheLinkAndWritesThroughIt(): void
+    public function writeTreeKeepsTheLinkAndWritesThroughIt(): void
     {
         $target = $this->path('target.html');
         file_put_contents(
@@ -540,7 +540,7 @@ final class FileWriterTest extends TestCase
     }
 
     #[Test]
-    public function testWriteTreeRejectsAnEmptyName(): void
+    public function writeTreeRejectsAnEmptyName(): void
     {
         $this->expectException(Exception\InvalidArgumentException::class);
         $this->expectExceptionMessage('No file name specified');
@@ -549,7 +549,7 @@ final class FileWriterTest extends TestCase
     }
 
     #[Test]
-    public function testWriteTreeStillReplacesRatherThanAppends(): void
+    public function writeTreeStillReplacesRatherThanAppends(): void
     {
         $file        = "{$this->directory}/guide/index.html";
         $longContent = str_repeat(
@@ -565,7 +565,7 @@ final class FileWriterTest extends TestCase
     }
 
     #[Test]
-    public function testWriteTreeSucceedsWhenTheDirectoryAlreadyExists(): void
+    public function writeTreeSucceedsWhenTheDirectoryAlreadyExists(): void
     {
         $file = "{$this->directory}/guide/index.html";
 
