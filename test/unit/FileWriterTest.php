@@ -66,6 +66,24 @@ final class FileWriterTest extends TestCase
     }
 
     #[Test]
+    public function testADirectoryModeThatCannotBeAppliedIsReported(): void
+    {
+        if ('Windows' === PHP_OS_FAMILY) {
+            static::markTestSkipped('Windows does not model POSIX directory modes');
+        }
+
+        // A mode that cannot be applied must be reported rather than leaving a tree at
+        // whatever umask produced. The directory named here does not exist, which is the
+        // one way an unprivileged process reliably fails to change permissions.
+        $force = new ReflectionMethod(FileWriter::class, 'forceDirectoryMode');
+
+        $this->expectException(Exception\RuntimeException::class);
+        $this->expectExceptionMessageIsOrContains('Unable to set the mode of');
+
+        $force->invoke(null, $this->path('absent'), 0o755);
+    }
+
+    #[Test]
     public function testAnExistingDestinationKeepsItsMode(): void
     {
         if ('Windows' === PHP_OS_FAMILY) {
