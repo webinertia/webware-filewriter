@@ -49,6 +49,39 @@ foreach ($pages as $relativePath => $html) {
 }
 ```
 
+### Naming the mode
+
+Both methods take an optional mode. It matters when the output is served rather than read by the
+deployer, because the derived mode is a function of the environment:
+
+- a new file gets `0o666` narrowed by umask
+- an existing file keeps the mode it already has, forever
+
+So a published page that replaces a file created `0o600` stays unreadable by the web server on every
+future write, and a build host with a `0o077` umask silently makes every asset private.
+
+```php
+FileWriter::write(
+    filename: '/srv/site/index.html',
+    content : $html,
+    mode    : 0o644,
+);
+
+FileWriter::writeTree(
+    filename     : '/srv/build/site/guide/intro/index.html',
+    content      : $html,
+    mode         : 0o644,
+    directoryMode: 0o755,
+);
+```
+
+An explicit mode wins over both the destination's current bits and the process umask, and is applied
+to the temporary file before the rename, so the destination never exists with any other mode. The
+directory mode is applied after `mkdir()` because that call is always masked by umask. Both are
+accepted but have no effect on Windows, which does not model POSIX permissions.
+
+Omitting them keeps the derived behaviour described above.
+
 ### Symbolic links
 
 A symlinked destination is resolved, and the write lands on the target, so the link survives. This
@@ -64,6 +97,8 @@ follow and guessing where the file belongs is worse than saying so.
 |---|---|
 | Existing destination | mode, owner and group carried over to the new file |
 | New destination | mode `0666` narrowed by the process umask |
+| Explicit `$mode` | applied verbatim, over both the destination's bits and umask |
+| Explicit `$directoryMode` | applied after `mkdir()`, since that call is masked by umask |
 | Windows | no mode or ownership adoption; `chmod` there only toggles the read-only attribute, and a read-only file cannot be renamed over |
 | Unprivileged PHP process | mode preserved, ownership keeps the PHP user, since `chown` needs privilege |
 | Destination is a directory | fails with `Exception\RuntimeException` |
@@ -73,6 +108,13 @@ follow and guessing where the file belongs is worse than saying so.
 Owner and group adoption is best effort: a refused change does not fail the write. A host that runs
 PHP as a different user than the file's owner therefore needs its ownership corrected outside the
 application.
+
+## Documentation
+
+- [Introduction](docs/v1/intro.md): the write sequence, symbolic links, and every error case.
+- [Modes and ownership](docs/v1/modes.md): derived versus explicit modes, umask, directory modes,
+  and what happens on Windows.
+- [Writing a tree](docs/v1/tree.md): the generator case, its cost, and what it does not guarantee.
 
 ## Quality gates
 
