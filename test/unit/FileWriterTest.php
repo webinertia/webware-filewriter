@@ -267,7 +267,7 @@ final class FileWriterTest extends TestCase
         );
 
         $inherit = new ReflectionMethod(FileWriter::class, 'inheritAttributes');
-        $inherit->invoke(null, $temporary, $this->path('missing.txt'), true);
+        $inherit->invoke(null, $temporary, $this->path('missing.txt'));
 
         static::assertFileExists($temporary);
 
@@ -297,7 +297,7 @@ final class FileWriterTest extends TestCase
         );
 
         $inherit = new ReflectionMethod(FileWriter::class, 'inheritAttributes');
-        $inherit->invoke(null, $temporary, $destination, true);
+        $inherit->invoke(null, $temporary, $destination);
 
         static::assertSame('new document', file_get_contents($temporary));
 
