@@ -44,7 +44,7 @@ final class DocumentTreeTest extends TestCase
     private string $root;
 
     #[Test]
-    public function testAGeneratedSiteIsWrittenFromAnEmptyOutputDirectory(): void
+    public function aGeneratedSiteIsWrittenFromAnEmptyOutputDirectory(): void
     {
         $pages = [
             'index.html'                        => '<h1>Home</h1>',
@@ -71,7 +71,7 @@ final class DocumentTreeTest extends TestCase
     }
 
     #[Test]
-    public function testAnExplicitModeIsAppliedToTheTreeItWrites(): void
+    public function anExplicitModeIsAppliedToTheTreeItWrites(): void
     {
         if ('Windows' === PHP_OS_FAMILY) {
             static::markTestSkipped('Windows does not model POSIX directory modes');
@@ -100,7 +100,7 @@ final class DocumentTreeTest extends TestCase
     }
 
     #[Test]
-    public function testAPageIsWrittenThroughASymlinkedDestinationAndKeepsTheLink(): void
+    public function aPageIsWrittenThroughASymlinkedDestinationAndKeepsTheLink(): void
     {
         $target = "{$this->root}/shared/page.html";
         mkdir(
@@ -142,7 +142,7 @@ final class DocumentTreeTest extends TestCase
     }
 
     #[Test]
-    public function testManyPagesAreWrittenQuickly(): void
+    public function manyPagesAreWrittenQuickly(): void
     {
         $output = "{$this->root}/build/many";
         $html   = str_repeat(
@@ -166,7 +166,7 @@ final class DocumentTreeTest extends TestCase
     }
 
     #[Test]
-    public function testRebuildingOverAnExistingTreeReplacesEveryPage(): void
+    public function rebuildingOverAnExistingTreeReplacesEveryPage(): void
     {
         $output = "{$this->root}/build/site";
         $path   = "{$output}/guide/index.html";
@@ -181,7 +181,7 @@ final class DocumentTreeTest extends TestCase
     }
 
     #[Test]
-    public function testTheTreeIsWrittenWithoutLeavingTemporaryFiles(): void
+    public function theTreeIsWrittenWithoutLeavingTemporaryFiles(): void
     {
         $output = "{$this->root}/build/site";
 
