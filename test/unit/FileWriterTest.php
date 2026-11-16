@@ -89,9 +89,84 @@ final class FileWriterTest extends TestCase
     }
 
     #[Test]
+    public function testAnExplicitModeIsAppliedToANewFile(): void
+    {
+        if ('Windows' === PHP_OS_FAMILY) {
+            static::markTestSkipped('Windows does not model POSIX file modes');
+        }
+
+        $file = $this->path('page.html');
+
+        FileWriter::write(
+            filename: $file,
+            content : '<h1>Home</h1>',
+            mode    : 0o644,
+        );
+
+        clearstatcache();
+        static::assertSame(0o644, fileperms($file) & 0o7777);
+    }
+
+    #[Test]
+    public function testAnExplicitModeIsNotNarrowedByTheProcessUmask(): void
+    {
+        if ('Windows' === PHP_OS_FAMILY) {
+            static::markTestSkipped('Windows does not model POSIX file modes');
+        }
+
+        // A restrictive umask must not silently make a published page unreadable. An
+        // explicit mode belongs to the artifact, so umask does not apply to it.
+        $file  = $this->path('page.html');
+        $umask = umask(mask: 0o077);
+
+        try {
+            FileWriter::write(
+                filename: $file,
+                content : '<p>page</p>',
+                mode    : 0o644,
+            );
+        } finally {
+            umask(mask: $umask);
+        }
+
+        clearstatcache();
+        static::assertSame(0o644, fileperms($file) & 0o7777);
+    }
+
+    #[Test]
+    public function testAnExplicitModeOverridesTheDestinationMode(): void
+    {
+        if ('Windows' === PHP_OS_FAMILY) {
+            static::markTestSkipped('Windows does not model POSIX file modes');
+        }
+
+        // A published page rewritten by a later deploy must not inherit the mode of the
+        // file it replaces. Without an explicit mode a restrictive predecessor decides
+        // the mode of every future write to that path.
+        $file = $this->path('page.html');
+        file_put_contents(
+            filename: $file,
+            data    : 'previous page',
+        );
+        chmod(
+            filename   : $file,
+            permissions: 0o600,
+        );
+
+        FileWriter::write(
+            filename: $file,
+            content : '<p>new page</p>',
+            mode    : 0o644,
+        );
+
+        clearstatcache();
+        static::assertSame(0o644, fileperms($file) & 0o7777);
+    }
+
+    #[Test]
     public function testAttributesAreNotAdoptedWherePosixPermissionsAreUnavailable(): void
     {
-        $inherit     = new ReflectionMethod(FileWriter::class, 'inheritAttributes');
+        $inherit     = new ReflectionMethod(FileWriter::class, 'adoptAttributes');
         $destination = $this->path('target.txt');
         file_put_contents(
             filename: $destination,
@@ -108,7 +183,7 @@ final class FileWriterTest extends TestCase
             data    : 'new document',
         );
 
-        $inherit->invoke(null, $temporary, $destination, false);
+        $inherit->invoke(null, $temporary, $destination, null);
 
         // On Windows chmod toggles only the read-only bit, so adopting the
         // destination's mode there could leave the file unrenameable and break the
