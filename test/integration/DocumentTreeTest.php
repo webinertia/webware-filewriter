@@ -11,8 +11,10 @@ use Webware\FileWriter\FileWriter;
 
 use function bin2hex;
 use function chmod;
+use function clearstatcache;
 use function file_get_contents;
 use function file_put_contents;
+use function fileperms;
 use function glob;
 use function is_array;
 use function is_dir;
@@ -27,7 +29,10 @@ use function set_error_handler;
 use function str_repeat;
 use function symlink;
 use function sys_get_temp_dir;
+use function umask;
 use function unlink;
+
+use const PHP_OS_FAMILY;
 
 /**
  * Builds a documentation tree the way a site generator does: a set of pages whose
@@ -63,6 +68,35 @@ final class DocumentTreeTest extends TestCase
             static::assertFileExists($path);
             static::assertSame($html, file_get_contents($path));
         }
+    }
+
+    #[Test]
+    public function testAnExplicitModeIsAppliedToTheTreeItWrites(): void
+    {
+        if ('Windows' === PHP_OS_FAMILY) {
+            static::markTestSkipped('Windows does not model POSIX directory modes');
+        }
+
+        // A publish step owns the mode of what it emits: mkdir() is narrowed by umask,
+        // so a directory mode has to survive a restrictive umask to be worth naming.
+        $page    = "{$this->root}/out/nested/index.html";
+        $umask   = umask(mask: 0o077);
+        $written = "{$this->root}/out/nested";
+
+        try {
+            FileWriter::writeTree(
+                filename     : $page,
+                content      : '<h1>Home</h1>',
+                mode         : 0o644,
+                directoryMode: 0o755,
+            );
+        } finally {
+            umask(mask: $umask);
+        }
+
+        clearstatcache();
+        static::assertSame(0o644, fileperms($page) & 0o7777);
+        static::assertSame(0o755, fileperms($written) & 0o7777);
     }
 
     #[Test]

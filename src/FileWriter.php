@@ -105,18 +105,19 @@ final class FileWriter
     }
 
     /**
-     * @param string $filename Callers may pass an empty name, which is rejected.
+     * @param string   $filename Callers may pass an empty name, which is rejected.
+     * @param null|int $mode     Permission bits to apply verbatim, or null to derive them.
      * @throws Exception\InvalidArgumentException If the file name is empty.
      * @throws Exception\RuntimeException If the file cannot be written.
      */
-    public static function write(string $filename, string $content): void
+    public static function write(string $filename, string $content, ?int $mode = null): void
     {
         $filename  = self::resolve($filename);
         $temporary = self::createTemporary(Filesystem\get_directory($filename));
 
         try {
             self::fill($temporary, $content);
-            self::adoptAttributes($temporary, $filename);
+            self::adoptAttributes($temporary, $filename, $mode);
             self::swap($temporary, $filename);
         } catch (Throwable $throwable) {
             self::discard($temporary);
@@ -143,18 +144,25 @@ final class FileWriter
      * target below the first level is missing by construction, so this variant
      * creates what it needs and then delegates to write().
      *
-     * @param string $filename Callers may pass an empty name, which is rejected.
+     * @param string   $filename      Callers may pass an empty name, which is rejected.
+     * @param null|int $mode          Permission bits for the file, or null to derive them.
+     * @param null|int $directoryMode Permission bits for the created directories, or null to
+     *                                derive them.
      * @throws Exception\InvalidArgumentException If the file name is empty.
      * @throws Exception\RuntimeException If a directory or the file cannot be created.
      */
-    public static function writeTree(string $filename, string $content): void
-    {
+    public static function writeTree(
+        string $filename,
+        string $content,
+        ?int $mode = null,
+        ?int $directoryMode = null,
+    ): void {
         $filename = self::resolve($filename);
 
         try {
             // Creates the parent chain only. The default mode means a generated tree
             // is usable by another account, which is what a published site needs.
-            Filesystem\create_directory_for_file($filename, self::DIRECTORY_MODE);
+            Filesystem\create_directory_for_file($filename, $directoryMode ?? self::DIRECTORY_MODE);
         } catch (PslExceptionInterface $exception) {
             throw new Exception\RuntimeException(
                 sprintf('Unable to create the directory for "%s"', $filename),
@@ -163,7 +171,11 @@ final class FileWriter
             );
         }
 
-        self::write($filename, $content);
+        if (null !== $directoryMode) {
+            self::forceDirectoryMode(Filesystem\get_directory($filename), $directoryMode);
+        }
+
+        self::write($filename, $content, $mode);
     }
 
     /**
@@ -177,9 +189,10 @@ final class FileWriter
      *
      * @param non-empty-string $temporary
      * @param non-empty-string $filename
+     * @param null|int         $mode Explicit permission bits, or null to derive them.
      * @throws PslExceptionInterface
      */
-    private static function adoptAttributes(string $temporary, string $filename): void
+    private static function adoptAttributes(string $temporary, string $filename, ?int $mode): void
     {
         // Windows is skipped entirely. It does not model POSIX permissions: chmod
         // there toggles only the read-only bit, and a read-only destination cannot be
@@ -187,7 +200,7 @@ final class FileWriter
         // not settable without elevation either. The temporary file keeps the mode it
         // was created with, which on Windows means writable.
         if ('Windows' !== PHP_OS_FAMILY) {
-            self::inheritAttributes($temporary, $filename);
+            self::inheritAttributes($temporary, $filename, $mode);
         }
     }
 
@@ -286,14 +299,56 @@ final class FileWriter
     }
 
     /**
+     * Narrow a created directory to the mode the caller named.
+     *
+     * mkdir() applies the process umask, so a directory created for a generated tree can
+     * end up more restrictive than requested. chmod is not masked, so the mode is applied
+     * afterwards to make it exact. The creation mode is the requested one, so the
+     * intermediate state is never wider than the result.
+     *
+     * Only the directory holding the file is adjusted. The rest of the chain may already
+     * exist, and widening a directory this call did not create is not its decision.
+     *
+     * @param non-empty-string $directory
+     * @throws Exception\RuntimeException If the mode cannot be applied.
+     */
+    private static function forceDirectoryMode(string $directory, int $mode): void
+    {
+        if ('Windows' === PHP_OS_FAMILY) {
+            return;
+        }
+
+        try {
+            Filesystem\change_permissions($directory, $mode);
+        } catch (PslExceptionInterface $exception) {
+            throw new Exception\RuntimeException(
+                sprintf('Unable to set the mode of "%s"', $directory),
+                0,
+                $exception,
+            );
+        }
+    }
+
+    /**
      * @param non-empty-string $temporary
      * @param non-empty-string $filename
+     * @param null|int         $mode Explicit permission bits, or null to derive them.
      * @throws PslExceptionInterface
      */
     private static function inheritAttributes(
         string $temporary,
         string $filename,
+        ?int $mode = null,
     ): void {
+        // An explicit mode is a property of the artifact, not of the file it lands on,
+        // so it wins over both the destination's current mode and umask. Applying it to
+        // the temporary file means the destination never exists with any other mode.
+        if (null !== $mode) {
+            Filesystem\change_permissions($temporary, $mode);
+
+            return;
+        }
+
         if (! Filesystem\is_file($filename)) {
             Filesystem\change_permissions($temporary, self::MODE & ~umask());
 
