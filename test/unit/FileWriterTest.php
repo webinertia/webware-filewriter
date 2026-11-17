@@ -82,7 +82,7 @@ final class FileWriterTest extends TestCase
             permissions: 0o640,
         );
 
-        FileWriter::write($file, 'new document');
+        FileWriter::write($file, content: 'new document');
 
         clearstatcache();
         static::assertSame(0o640, fileperms($file) & 0o7777);
@@ -183,7 +183,7 @@ final class FileWriterTest extends TestCase
             data    : 'new document',
         );
 
-        $inherit->invoke(null, $temporary, $destination, null);
+        $inherit->invoke(null, $temporary, $destination, mode: null);
 
         // On Windows chmod toggles only the read-only bit, so adopting the
         // destination's mode there could leave the file unrenameable and break the
@@ -208,7 +208,7 @@ final class FileWriterTest extends TestCase
         $this->expectException(Exception\RuntimeException::class);
         $this->expectExceptionMessageIsOrContains('Unable to set the mode of');
 
-        $force->invoke(null, $this->path('absent'), 0o755);
+        $force->invoke(null, $this->path('absent'), mode: 0o755);
     }
 
     #[Test]
@@ -231,7 +231,7 @@ final class FileWriterTest extends TestCase
     {
         $file = $this->path('target.txt');
 
-        FileWriter::write($file, 'content');
+        FileWriter::write($file, content: 'content');
 
         static::assertSame([], $this->leftovers());
     }
@@ -243,7 +243,7 @@ final class FileWriterTest extends TestCase
         mkdir($directory);
 
         try {
-            FileWriter::write($directory, 'content');
+            FileWriter::write($directory, content: 'content');
             static::fail('Writing to a directory should have failed');
         } catch (Exception\RuntimeException $exception) {
             static::assertStringContainsString('unable to replace the file', $exception->getMessage());
@@ -331,7 +331,7 @@ final class FileWriterTest extends TestCase
         $this->expectException(Exception\InvalidArgumentException::class);
         $this->expectExceptionMessage('No file name specified');
 
-        FileWriter::write('', 'content');
+        FileWriter::write('', content: 'content');
     }
 
     #[Test]
@@ -351,10 +351,10 @@ final class FileWriterTest extends TestCase
 
         $inode = fileinode($file);
 
-        FileWriter::write($file, 'replacement');
+        FileWriter::write($file, content: 'replacement');
 
         static::assertSame('replacement', file_get_contents($file));
-        static::assertNotSame($inode, fileinode($file), 'The target inode should be replaced');
+        static::assertNotSame($inode, fileinode($file), message: 'The target inode should be replaced');
 
         // The sibling name still refers to the previous inode, which proves the
         // write did not go through the existing file.
@@ -416,8 +416,8 @@ final class FileWriterTest extends TestCase
     {
         $file = $this->path('target.txt');
 
-        FileWriter::write($file, 'a much longer document than the next one');
-        FileWriter::write($file, 'short');
+        FileWriter::write($file, content: 'a much longer document than the next one');
+        FileWriter::write($file, content: 'short');
 
         static::assertSame('short', file_get_contents($file));
         static::assertSame(5, strlen((string) file_get_contents($file)));
@@ -437,7 +437,7 @@ final class FileWriterTest extends TestCase
         $this->expectException(Exception\RuntimeException::class);
         $this->expectExceptionMessage('Unable to create a temporary file in');
 
-        FileWriter::write("{$parent}/target.txt", 'content');
+        FileWriter::write("{$parent}/target.txt", content: 'content');
     }
 
     #[Test]
@@ -445,7 +445,7 @@ final class FileWriterTest extends TestCase
     {
         $this->expectException(Exception\RuntimeException::class);
 
-        FileWriter::write("{$this->directory}/missing/file.txt", 'content');
+        FileWriter::write("{$this->directory}/missing/file.txt", content: 'content');
     }
 
     #[Test]
@@ -453,7 +453,7 @@ final class FileWriterTest extends TestCase
     {
         $this->expectException(Exception\RuntimeException::class);
 
-        FileWriter::write($this->directory, 'content');
+        FileWriter::write($this->directory, content: 'content');
     }
 
     #[Test]
@@ -471,7 +471,7 @@ final class FileWriterTest extends TestCase
             link  : $link,
         );
 
-        FileWriter::write($link, 'new document');
+        FileWriter::write($link, content: 'new document');
 
         // The link survives and the target carries the new content.
         static::assertTrue(is_link($link));
@@ -483,7 +483,7 @@ final class FileWriterTest extends TestCase
     {
         $file = $this->path('target.txt');
 
-        FileWriter::write($file, 'written');
+        FileWriter::write($file, content: 'written');
 
         static::assertSame('written', file_get_contents($file));
     }
@@ -513,7 +513,7 @@ final class FileWriterTest extends TestCase
     {
         $file = "{$this->directory}/guide/intro/index.html";
 
-        FileWriter::writeTree($file, '<p>page</p>');
+        FileWriter::writeTree($file, content: '<p>page</p>');
 
         static::assertSame('<p>page</p>', file_get_contents($file));
     }
@@ -533,7 +533,7 @@ final class FileWriterTest extends TestCase
             link  : $link,
         );
 
-        FileWriter::writeTree($link, 'new document');
+        FileWriter::writeTree($link, content: 'new document');
 
         static::assertTrue(is_link($link));
         static::assertSame('new document', file_get_contents($target));
@@ -545,7 +545,7 @@ final class FileWriterTest extends TestCase
         $this->expectException(Exception\InvalidArgumentException::class);
         $this->expectExceptionMessage('No file name specified');
 
-        FileWriter::writeTree('', 'content');
+        FileWriter::writeTree('', content: 'content');
     }
 
     #[Test]
@@ -569,8 +569,8 @@ final class FileWriterTest extends TestCase
     {
         $file = "{$this->directory}/guide/index.html";
 
-        FileWriter::writeTree($file, 'first');
-        FileWriter::writeTree($file, 'second');
+        FileWriter::writeTree($file, content: 'first');
+        FileWriter::writeTree($file, content: 'second');
 
         static::assertSame('second', file_get_contents($file));
     }
