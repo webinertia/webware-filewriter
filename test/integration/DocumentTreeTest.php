@@ -57,7 +57,7 @@ final class DocumentTreeTest extends TestCase
 
         $output = "{$this->root}/build/site";
 
-        static::assertFalse(is_dir($output), 'The output directory must start absent');
+        static::assertFalse(is_dir($output), message: 'The output directory must start absent');
 
         foreach ($pages as $relative => $html) {
             FileWriter::writeTree("{$output}/{$relative}", $html);
@@ -135,7 +135,7 @@ final class DocumentTreeTest extends TestCase
             static::markTestSkipped('This host does not permit creating symbolic links');
         }
 
-        FileWriter::writeTree($link, 'rebuilt');
+        FileWriter::writeTree($link, content: 'rebuilt');
 
         static::assertTrue(is_link($link));
         static::assertSame('rebuilt', file_get_contents($target));
@@ -162,7 +162,7 @@ final class DocumentTreeTest extends TestCase
 
         // Generous bound: the measured cost is a fraction of a millisecond per page,
         // so this only catches a change that turns a linear build into a slow one.
-        static::assertLessThan(30.0, $elapsed, 'Writing 300 pages should not take seconds');
+        static::assertLessThan(30.0, $elapsed, message: 'Writing 300 pages should not take seconds');
     }
 
     #[Test]
@@ -175,7 +175,7 @@ final class DocumentTreeTest extends TestCase
             string: '<p>old</p>',
             times : 100,
         ));
-        FileWriter::writeTree($path, '<p>new</p>');
+        FileWriter::writeTree($path, content: '<p>new</p>');
 
         static::assertSame('<p>new</p>', file_get_contents($path));
     }
@@ -185,7 +185,7 @@ final class DocumentTreeTest extends TestCase
     {
         $output = "{$this->root}/build/site";
 
-        FileWriter::writeTree("{$output}/guide/index.html", '<h1>Guide</h1>');
+        FileWriter::writeTree("{$output}/guide/index.html", content: '<h1>Guide</h1>');
 
         static::assertSame([], glob(pattern: "{$output}/guide/.wcm*"));
         static::assertSame([], glob(pattern: "{$output}/.wcm*"));
