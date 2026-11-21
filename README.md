@@ -111,10 +111,12 @@ application.
 
 ## Documentation
 
-- [Introduction](docs/v1/intro.md): the write sequence, symbolic links, and every error case.
-- [Modes and ownership](docs/v1/modes.md): derived versus explicit modes, umask, directory modes,
+The 1.0 release line is documented under [docs/1.0](docs/1.0/index.md):
+
+- [Introduction](docs/1.0/index.md): the write sequence, symbolic links, and every error case.
+- [Modes and ownership](docs/1.0/modes.md): derived versus explicit modes, umask, directory modes,
   and what happens on Windows.
-- [Writing a tree](docs/v1/tree.md): the generator case, its cost, and what it does not guarantee.
+- [Writing a tree](docs/1.0/tree.md): the generator case, its cost, and what it does not guarantee.
 
 ## Quality gates
 
