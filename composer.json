@@ -16,7 +16,7 @@
         }
     ],
     "require": {
-        "php": "~8.4.1 || ~8.5.0",
+        "php": "~8.4.1 || ~8.5.0 || ~8.6.0",
         "php-standard-library/file": "^6.4.2",
         "php-standard-library/filesystem": "^6.4.2"
     },
