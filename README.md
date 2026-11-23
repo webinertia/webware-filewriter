@@ -111,9 +111,9 @@ application.
 
 ## Documentation
 
-The 1.0 release line is documented under [docs/1.0](docs/1.0/index.md):
+The 1.0 release line is documented under [docs/1.0](docs/1.0):
 
-- [Introduction](docs/1.0/index.md): the write sequence, symbolic links, and every error case.
+- [Introduction](docs/1.0): the write sequence, symbolic links, and every error case.
 - [Modes and ownership](docs/1.0/modes.md): derived versus explicit modes, umask, directory modes,
   and what happens on Windows.
 - [Writing a tree](docs/1.0/tree.md): the generator case, its cost, and what it does not guarantee.
